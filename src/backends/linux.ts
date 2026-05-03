@@ -61,7 +61,7 @@ export async function pollLinux(): Promise<NowPlayingInfo | null> {
  */
 export function streamLinux(
   signal: AbortSignal,
-  onUpdate: (info: NowPlayingInfo | null) => void
+  onUpdate: (info: NowPlayingInfo | null, streamEnded?: boolean) => void
 ): void {
   if (signal.aborted) return
 
@@ -80,13 +80,13 @@ export function streamLinux(
   })
 
   proc.on("close", () => {
-    onUpdate(null)
+    onUpdate(null, true)
   })
 
   proc.on("error", (err) => {
     if ((err as NodeJS.ErrnoException).code !== "ABORT_ERR") {
       console.error("[opencode-now-playing] playerctl error:", err.message)
     }
-    onUpdate(null)
+    onUpdate(null, true)
   })
 }

@@ -81,8 +81,8 @@ export function createBackend(
         const streamFn = platform === "macos" ? streamMacOS : streamLinux
         let streamEnded = false
 
-        streamFn(signal, (info) => {
-          if (info === null && !streamEnded) {
+        streamFn(signal, (info, ended = false) => {
+          if (ended && !streamEnded) {
             streamEnded = true
             if (retries < MAX_RETRIES) {
               retries++

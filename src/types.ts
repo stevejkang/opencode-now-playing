@@ -12,18 +12,24 @@ export interface NowPlayingInfo {
   state: PlaybackState
 }
 
-/** Raw payload from `media-control get` or `media-control stream` (macOS) */
-export interface MediaControlPayload {
+/** Metadata object emitted by `media-control get` or stream event payloads */
+export interface MediaControlMetadata {
+  title?: string
+  artist?: string
+  album?: string
+  bundleIdentifier?: string
+  playing?: boolean
+  elapsedTime?: number
+  duration?: number
+  elapsedTimeMicros?: number
+  durationMicros?: number
+}
+
+/** Raw event from `media-control stream` (macOS) */
+export interface MediaControlStreamEvent {
+  type?: string
   diff: boolean
-  payload: {
-    title?: string
-    artist?: string
-    album?: string
-    bundleIdentifier?: string
-    playing?: boolean
-    elapsedTimeMicros?: number
-    durationMicros?: number
-  } | null
+  payload: MediaControlMetadata | null
 }
 
 /** Parsed result from playerctl template output (Linux) */

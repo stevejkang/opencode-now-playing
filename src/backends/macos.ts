@@ -1,15 +1,21 @@
 import { spawn } from "node:child_process"
-import type { NowPlayingInfo, MediaControlPayload } from "../types"
+import type { NowPlayingInfo, MediaControlMetadata, MediaControlStreamEvent } from "../types"
 import { detectService } from "../format"
 
 /**
- * Pure function: converts raw media-control payload → NowPlayingInfo.
+ * Pure function: converts raw media-control metadata → NowPlayingInfo.
+ * Accepts both `media-control get` flat JSON and `media-control stream` events.
  * Returns null if payload is null (nothing playing) or data is incomplete.
  */
-export function parseMacOSPayload(raw: MediaControlPayload): NowPlayingInfo | null {
-  if (!raw.payload) return null
+export function parseMacOSPayload(
+  raw: MediaControlMetadata | MediaControlStreamEvent | null
+): NowPlayingInfo | null {
+  if (!raw) return null
 
-  const { title, artist, bundleIdentifier, playing } = raw.payload
+  const metadata = "payload" in raw ? raw.payload : raw
+  if (!metadata) return null
+
+  const { title, artist, bundleIdentifier, playing } = metadata
 
   if (!title || !artist) return null
 
@@ -38,7 +44,7 @@ export async function pollMacOS(): Promise<NowPlayingInfo | null> {
         return
       }
       try {
-        const raw: MediaControlPayload = JSON.parse(output.trim())
+        const raw: MediaControlMetadata | null = JSON.parse(output.trim())
         resolve(parseMacOSPayload(raw))
       } catch {
         resolve(null)
@@ -56,12 +62,16 @@ export async function pollMacOS(): Promise<NowPlayingInfo | null> {
  */
 export function streamMacOS(
   signal: AbortSignal,
-  onUpdate: (info: NowPlayingInfo | null) => void
+  onUpdate: (info: NowPlayingInfo | null, streamEnded?: boolean) => void
 ): void {
   if (signal.aborted) return
 
   let buffer = ""
-  const proc = spawn("media-control", ["stream"], { signal })
+  const proc = spawn(
+    "media-control",
+    ["stream", "--no-diff", "--no-artwork", "--debounce=100"],
+    { signal }
+  )
 
   proc.stdout.on("data", (chunk: Buffer) => {
     buffer += chunk.toString()
@@ -72,7 +82,7 @@ export function streamMacOS(
       const trimmed = line.trim()
       if (!trimmed) continue
       try {
-        const raw: MediaControlPayload = JSON.parse(trimmed)
+        const raw: MediaControlStreamEvent = JSON.parse(trimmed)
         onUpdate(parseMacOSPayload(raw))
       } catch {
         // skip malformed lines
@@ -81,7 +91,7 @@ export function streamMacOS(
   })
 
   proc.on("close", () => {
-    onUpdate(null)
+    onUpdate(null, true)
   })
 
   proc.on("error", (err) => {
@@ -89,6 +99,6 @@ export function streamMacOS(
     if ((err as NodeJS.ErrnoException).code !== "ABORT_ERR") {
       console.error("[opencode-now-playing] media-control error:", err.message)
     }
-    onUpdate(null)
+    onUpdate(null, true)
   })
 }

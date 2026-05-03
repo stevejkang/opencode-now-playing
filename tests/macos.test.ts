@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest"
 import { parseMacOSPayload } from "../src/backends/macos.js"
-import type { MediaControlPayload } from "../src/types.js"
+import type { MediaControlMetadata, MediaControlStreamEvent } from "../src/types.js"
 
 describe("parseMacOSPayload", () => {
   it("parses valid payload with playing: true", () => {
-    const raw: MediaControlPayload = {
+    const raw: MediaControlStreamEvent = {
       diff: true,
       payload: {
         title: "Get Lucky",
@@ -22,7 +22,7 @@ describe("parseMacOSPayload", () => {
   })
 
   it("parses valid payload with playing: false as paused", () => {
-    const raw: MediaControlPayload = {
+    const raw: MediaControlStreamEvent = {
       diff: true,
       payload: {
         title: "Get Lucky",
@@ -39,16 +39,39 @@ describe("parseMacOSPayload", () => {
     })
   })
 
+  it("parses flat media-control get output", () => {
+    const raw: MediaControlMetadata = {
+      title: "Landing in Love",
+      artist: "HANRORO",
+      bundleIdentifier: "com.apple.Music",
+      playing: true,
+    }
+    expect(parseMacOSPayload(raw)).toEqual({
+      title: "Landing in Love",
+      artist: "HANRORO",
+      service: "apple-music",
+      state: "playing",
+    })
+  })
+
   it("returns null when payload is null", () => {
-    const raw: MediaControlPayload = {
+    const raw: MediaControlStreamEvent = {
       diff: true,
       payload: null,
     }
     expect(parseMacOSPayload(raw)).toBeNull()
   })
 
+  it("returns null when stream payload is empty", () => {
+    const raw: MediaControlStreamEvent = {
+      diff: false,
+      payload: {},
+    }
+    expect(parseMacOSPayload(raw)).toBeNull()
+  })
+
   it("returns null when title is missing", () => {
-    const raw: MediaControlPayload = {
+    const raw: MediaControlStreamEvent = {
       diff: true,
       payload: {
         artist: "Daft Punk",
@@ -60,7 +83,7 @@ describe("parseMacOSPayload", () => {
   })
 
   it("returns null when artist is missing", () => {
-    const raw: MediaControlPayload = {
+    const raw: MediaControlStreamEvent = {
       diff: true,
       payload: {
         title: "Get Lucky",
@@ -72,7 +95,7 @@ describe("parseMacOSPayload", () => {
   })
 
   it("detects spotify from bundle ID", () => {
-    const raw: MediaControlPayload = {
+    const raw: MediaControlStreamEvent = {
       diff: true,
       payload: {
         title: "Test",
@@ -86,7 +109,7 @@ describe("parseMacOSPayload", () => {
   })
 
   it("detects apple-music from bundle ID", () => {
-    const raw: MediaControlPayload = {
+    const raw: MediaControlStreamEvent = {
       diff: true,
       payload: {
         title: "Test",
@@ -100,7 +123,7 @@ describe("parseMacOSPayload", () => {
   })
 
   it("returns unknown for unrecognized bundle ID", () => {
-    const raw: MediaControlPayload = {
+    const raw: MediaControlStreamEvent = {
       diff: true,
       payload: {
         title: "Test",
