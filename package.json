@@ -12,6 +12,14 @@
   },
   "keywords": ["opencode", "plugin", "tui", "music", "now-playing", "spotify", "apple-music"],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stevejkang/opencode-now-playing"
+  },
+  "homepage": "https://github.com/stevejkang/opencode-now-playing#readme",
+  "bugs": {
+    "url": "https://github.com/stevejkang/opencode-now-playing/issues"
+  },
   "peerDependencies": {
     "@opencode-ai/plugin": ">=1.4.3"
   },

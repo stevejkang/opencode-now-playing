@@ -98,7 +98,7 @@ describe("detectServiceFromPlayerName", () => {
 })
 
 describe("formatTrackLine", () => {
-  it("formats playing track with icon", () => {
+  it("formats playing track without icon", () => {
     expect(
       formatTrackLine({
         title: "Get Lucky",
@@ -106,10 +106,10 @@ describe("formatTrackLine", () => {
         service: "spotify",
         state: "playing",
       })
-    ).toBe("▶ Daft Punk - Get Lucky")
+    ).toBe("Daft Punk - Get Lucky")
   })
 
-  it("formats paused track with pause icon", () => {
+  it("formats paused track without icon", () => {
     expect(
       formatTrackLine({
         title: "Get Lucky",
@@ -117,7 +117,7 @@ describe("formatTrackLine", () => {
         service: "spotify",
         state: "paused",
       })
-    ).toBe("⏸ Daft Punk - Get Lucky")
+    ).toBe("Daft Punk - Get Lucky")
   })
 
   it("truncates long combined text to 30 chars with …", () => {
@@ -127,8 +127,7 @@ describe("formatTrackLine", () => {
       service: "spotify",
       state: "playing",
     })
-    const textPart = result.slice(2)
-    expect(textPart.length).toBeLessThanOrEqual(31)
+    expect(result.length).toBeLessThanOrEqual(31)
   })
 })
 
@@ -141,7 +140,7 @@ describe("formatStatusLine", () => {
         service: "spotify",
         state: "playing",
       })
-    ).toBe("  playing on Spotify")
+    ).toBe("playing on Spotify")
   })
 
   it("formats paused on Apple Music", () => {
@@ -152,7 +151,7 @@ describe("formatStatusLine", () => {
         service: "apple-music",
         state: "paused",
       })
-    ).toBe("  paused on Apple Music")
+    ).toBe("paused on Apple Music")
   })
 
   it("formats stopped without service name", () => {
@@ -163,6 +162,6 @@ describe("formatStatusLine", () => {
         service: "spotify",
         state: "stopped",
       })
-    ).toBe("  stopped")
+    ).toBe("stopped")
   })
 })

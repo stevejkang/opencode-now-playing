@@ -4,7 +4,6 @@ import {
   PLAYER_NAME_MAP,
   YOUTUBE_TITLE_PATTERNS,
   SERVICE_LABELS,
-  STATE_ICONS,
   STATE_LABELS,
   MAX_TEXT_LENGTH,
 } from "./constants.js"
@@ -19,16 +18,14 @@ export function truncateText(text: string, maxLength: number): string {
 }
 
 /**
- * Formats the FIRST display line: "{stateIcon} {artist} - {title}"
+ * Formats the FIRST display line: "{artist} - {title}"
  * Both artist and title are truncated to MAX_TEXT_LENGTH before joining.
  * The combined "artist - title" string is then truncated to MAX_TEXT_LENGTH.
  */
 export function formatTrackLine(info: NowPlayingInfo): string {
   const artist = truncateText(info.artist, MAX_TEXT_LENGTH)
   const title = truncateText(info.title, MAX_TEXT_LENGTH)
-  const combined = truncateText(`${artist} - ${title}`, MAX_TEXT_LENGTH)
-  const icon = STATE_ICONS[info.state]
-  return `${icon} ${combined}`
+  return truncateText(`${artist} - ${title}`, MAX_TEXT_LENGTH)
 }
 
 /**
@@ -38,10 +35,10 @@ export function formatTrackLine(info: NowPlayingInfo): string {
 export function formatStatusLine(info: NowPlayingInfo): string {
   const label = STATE_LABELS[info.state]
   if (info.state === "stopped") {
-    return `  ${label}`
+    return label
   }
   const serviceName = SERVICE_LABELS[info.service]
-  return `  ${label} ${serviceName}`
+  return `${label} ${serviceName}`
 }
 
 /**
