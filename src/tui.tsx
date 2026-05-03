@@ -60,7 +60,7 @@ const tui: TuiPlugin = async (api, options, _meta) => {
 
         return (
           <box flexDirection="column">
-            <text fg={t.primary}>{"🎵 Now Playing"}</text>
+            <text>{"🎵 Now Playing"}</text>
             {status() === "loading" && (
               <text fg={dim}>{"♪ Loading…"}</text>
             )}
