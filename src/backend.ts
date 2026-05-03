@@ -1,7 +1,7 @@
-import type { NowPlayingInfo } from "./types.js"
-import { streamMacOS, pollMacOS } from "./backends/macos.js"
-import { streamLinux, pollLinux } from "./backends/linux.js"
-import { DEFAULT_REFRESH_INTERVAL } from "./constants.js"
+import type { NowPlayingInfo } from "./types"
+import { streamMacOS, pollMacOS } from "./backends/macos"
+import { streamLinux, pollLinux } from "./backends/linux"
+import { DEFAULT_REFRESH_INTERVAL } from "./constants"
 
 export type Platform = "macos" | "linux" | "unsupported"
 

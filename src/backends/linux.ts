@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process"
-import type { NowPlayingInfo } from "../types.js"
-import { detectServiceFromPlayerName } from "../format.js"
+import type { NowPlayingInfo } from "../types"
+import { detectServiceFromPlayerName } from "../format"
 
 /** playerctl template format string — tab-separated fields */
 const PLAYERCTL_FORMAT = "{{playerName}}\t{{status}}\t{{artist}}\t{{title}}"

@@ -1,10 +1,10 @@
 /** @jsxImportSource @opentui/solid */
 import type { TuiPlugin, TuiPluginModule, TuiSlotContext } from "@opencode-ai/plugin/tui"
 import { createSignal, onCleanup } from "solid-js"
-import { detectPlatform, createBackend } from "./backend.js"
-import { ensureCLI } from "./detector.js"
-import { formatTrackLine, formatStatusLine } from "./format.js"
-import type { NowPlayingInfo, PluginConfig } from "./types.js"
+import { detectPlatform, createBackend } from "./backend"
+import { ensureCLI } from "./detector"
+import { formatTrackLine, formatStatusLine } from "./format"
+import type { NowPlayingInfo, PluginConfig } from "./types"
 
 type Status = "loading" | "ready" | "not-installed" | "unsupported"
 

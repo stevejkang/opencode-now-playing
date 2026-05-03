@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process"
-import type { NowPlayingInfo, MediaControlPayload } from "../types.js"
-import { detectService } from "../format.js"
+import type { NowPlayingInfo, MediaControlPayload } from "../types"
+import { detectService } from "../format"
 
 /**
  * Pure function: converts raw media-control payload → NowPlayingInfo.

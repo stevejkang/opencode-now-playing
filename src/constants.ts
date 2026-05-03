@@ -1,4 +1,4 @@
-import type { ServiceType, PlaybackState } from "./types.js"
+import type { ServiceType, PlaybackState } from "./types"
 
 /** macOS bundle ID → ServiceType mapping */
 export const BUNDLE_ID_MAP: Record<string, ServiceType> = {

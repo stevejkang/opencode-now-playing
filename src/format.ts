@@ -1,4 +1,4 @@
-import type { NowPlayingInfo, ServiceType } from "./types.js"
+import type { NowPlayingInfo, ServiceType } from "./types"
 import {
   BUNDLE_ID_MAP,
   PLAYER_NAME_MAP,
@@ -6,7 +6,7 @@ import {
   SERVICE_LABELS,
   STATE_LABELS,
   MAX_TEXT_LENGTH,
-} from "./constants.js"
+} from "./constants"
 
 /**
  * Truncates text to maxLength characters, appending "…" if truncated.
