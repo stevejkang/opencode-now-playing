@@ -3,27 +3,27 @@
 An [opencode](https://opencode.ai) TUI sidebar plugin that shows what's playing right now. Supports Apple Music, Spotify, and YouTube Music on macOS and Linux.
 
 ```
-🎵 Now Playing
+Now Playing
 Daft Punk - Get Lucky
 playing on Spotify
 ```
 
 Paused:
 ```
-🎵 Now Playing
+Now Playing
 Daft Punk - Get Lucky
 paused on Spotify
 ```
 
 Nothing playing:
 ```
-🎵 Now Playing
+Now Playing
 ♪ Not playing
 ```
 
 Missing dependency:
 ```
-🎵 Now Playing
+Now Playing
 ⚠ brew install media-control
 ```
 
