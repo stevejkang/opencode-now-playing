@@ -1,0 +1,25 @@
+{
+  "name": "opencode-now-playing",
+  "version": "0.0.0",
+  "description": "Now playing music sidebar widget for opencode",
+  "type": "module",
+  "exports": {
+    "./tui": "./src/tui.tsx"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "keywords": ["opencode", "plugin", "tui", "music", "now-playing", "spotify", "apple-music"],
+  "license": "MIT",
+  "peerDependencies": {
+    "@opencode-ai/plugin": ">=1.4.3"
+  },
+  "devDependencies": {
+    "@opencode-ai/plugin": "^1.4.3",
+    "@opentui/core": "latest",
+    "@opentui/solid": "latest",
+    "typescript": "^5.0.0",
+    "vitest": "^2.0.0"
+  }
+}
