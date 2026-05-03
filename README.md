@@ -94,11 +94,12 @@ Streams playback state in real-time. Falls back to polling (up to 3 retries) if 
 Skip npm. Copy the source files directly:
 
 ```bash
-mkdir -p ~/.config/opencode/plugins/opencode-now-playing
+mkdir -p ~/.config/opencode/plugins/opencode-now-playing/backends
 cp src/tui.tsx src/types.ts src/format.ts src/backend.ts \
    src/detector.ts src/constants.ts \
-   src/backends/macos.ts src/backends/linux.ts \
    ~/.config/opencode/plugins/opencode-now-playing/
+cp src/backends/macos.ts src/backends/linux.ts \
+   ~/.config/opencode/plugins/opencode-now-playing/backends/
 ```
 
 Register the local path:
