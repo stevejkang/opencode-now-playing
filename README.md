@@ -36,6 +36,22 @@ Install and configure opencode-now-playing by following the instructions here:
 https://raw.githubusercontent.com/stevejkang/opencode-now-playing/refs/heads/main/docs/installation.md
 ```
 
+### Prerequisites
+
+Install the platform dependency:
+
+```bash
+# macOS
+brew install media-control
+
+# Linux
+sudo apt install playerctl
+# or, if using Homebrew on Linux:
+brew install playerctl
+```
+
+If the dependency isn't found, the plugin shows an install prompt instead of playback info.
+
 ### Setup
 
 One config file. Restart. Done.
