@@ -68,7 +68,7 @@ const tui: TuiPlugin = async (api, options, _meta) => {
               <text fg={dim}>{"♪ Not supported on this OS"}</text>
             )}
             {status() === "not-installed" && (
-              <text fg={warn}>{`⚠ ${hint()}`}</text>
+              <text fg={warn}>{`[!] ${hint()}`}</text>
             )}
             {status() === "ready" && nowPlaying() === null && (
               <text fg={dim}>{"♪ Not playing"}</text>
