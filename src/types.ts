@@ -1,5 +1,5 @@
 /** Supported music service types */
-export type ServiceType = "apple-music" | "spotify" | "youtube-music" | "unknown"
+export type ServiceType = "apple-music" | "spotify" | "browser" | "unknown"
 
 /** Playback state */
 export type PlaybackState = "playing" | "paused" | "stopped"

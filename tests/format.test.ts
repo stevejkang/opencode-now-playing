@@ -42,24 +42,16 @@ describe("detectService", () => {
     expect(detectService("com.apple.Music")).toBe("apple-music")
   })
 
-  it("returns unknown for Chrome with no title", () => {
-    expect(detectService("com.google.Chrome")).toBe("unknown")
+  it("maps com.google.Chrome to browser", () => {
+    expect(detectService("com.google.Chrome")).toBe("browser")
   })
 
-  it("detects youtube-music from Chrome with YouTube Music title", () => {
-    expect(detectService("com.google.Chrome", "YouTube Music - Song")).toBe(
-      "youtube-music"
-    )
+  it("maps org.mozilla.firefox to browser", () => {
+    expect(detectService("org.mozilla.firefox")).toBe("browser")
   })
 
-  it("returns unknown for Chrome with non-YouTube title", () => {
-    expect(detectService("com.google.Chrome", "Some Other Site")).toBe("unknown")
-  })
-
-  it("detects youtube-music from Firefox with YouTube Music title", () => {
-    expect(detectService("org.mozilla.firefox", "YouTube Music - Song")).toBe(
-      "youtube-music"
-    )
+  it("maps com.apple.Safari to browser", () => {
+    expect(detectService("com.apple.Safari")).toBe("browser")
   })
 
   it("returns unknown for unrecognized bundle ID", () => {
@@ -76,16 +68,16 @@ describe("detectServiceFromPlayerName", () => {
     expect(detectServiceFromPlayerName("Spotify")).toBe("spotify")
   })
 
-  it("detects youtube-music from chromium with YouTube Music title", () => {
-    expect(
-      detectServiceFromPlayerName("chromium", "YouTube Music - Song")
-    ).toBe("youtube-music")
+  it("maps chromium to browser", () => {
+    expect(detectServiceFromPlayerName("chromium")).toBe("browser")
   })
 
-  it("detects youtube-music from firefox with YouTube Music title", () => {
-    expect(
-      detectServiceFromPlayerName("firefox", "YouTube Music - Song")
-    ).toBe("youtube-music")
+  it("maps firefox to browser", () => {
+    expect(detectServiceFromPlayerName("firefox")).toBe("browser")
+  })
+
+  it("maps google-chrome to browser", () => {
+    expect(detectServiceFromPlayerName("google-chrome")).toBe("browser")
   })
 
   it("maps vlc to unknown (direct mapping)", () => {

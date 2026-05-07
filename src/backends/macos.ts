@@ -19,7 +19,7 @@ export function parseMacOSPayload(
 
   if (!title || !artist) return null
 
-  const service = detectService(bundleIdentifier ?? "", title)
+  const service = detectService(bundleIdentifier ?? "")
   const state = playing === true ? "playing" : "paused"
 
   return { title, artist, service, state }

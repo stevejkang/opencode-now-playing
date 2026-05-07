@@ -6,27 +6,27 @@ export const BUNDLE_ID_MAP: Record<string, ServiceType> = {
   "com.apple.music": "apple-music",
   "com.spotify.client": "spotify",
   "com.spotify.Spotify": "spotify",
+  "com.google.Chrome": "browser",
+  "org.mozilla.firefox": "browser",
+  "com.apple.Safari": "browser",
 }
 
 /** Linux playerctl player name → ServiceType mapping */
 export const PLAYER_NAME_MAP: Record<string, ServiceType> = {
   spotify: "spotify",
   Spotify: "spotify",
+  chromium: "browser",
+  firefox: "browser",
+  "google-chrome": "browser",
   rhythmbox: "unknown",
   vlc: "unknown",
 }
-
-/** Regex patterns to detect YouTube Music from window title or track metadata */
-export const YOUTUBE_TITLE_PATTERNS: RegExp[] = [
-  /youtube music/i,
-  /youtubemusic/i,
-]
 
 /** Human-readable service names for display (e.g. "playing on Spotify") */
 export const SERVICE_LABELS: Record<ServiceType, string> = {
   "apple-music": "Apple Music",
   "spotify": "Spotify",
-  "youtube-music": "YouTube Music",
+  "browser": "Browser",
   "unknown": "Unknown",
 }
 

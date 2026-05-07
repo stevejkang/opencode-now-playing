@@ -23,7 +23,7 @@ export function parsePlayerctlOutput(line: string): NowPlayingInfo | null {
   if (!playerName || !artist || !title) return null
   if (status === "Stopped" || !status) return null
 
-  const service = detectServiceFromPlayerName(playerName, title)
+  const service = detectServiceFromPlayerName(playerName)
   const state = status === "Playing" ? "playing" : "paused"
 
   return { title, artist, service, state }
