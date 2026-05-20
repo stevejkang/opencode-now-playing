@@ -10,7 +10,18 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
-  "keywords": ["opencode", "plugin", "tui", "music", "now-playing", "spotify", "apple-music"],
+  "keywords": [
+    "opencode",
+    "plugin",
+    "tui",
+    "music",
+    "now-playing",
+    "spotify",
+    "apple-music"
+  ],
+  "files": [
+    "src/"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
