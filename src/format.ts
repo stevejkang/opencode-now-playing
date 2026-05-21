@@ -5,6 +5,7 @@ import {
   SERVICE_LABELS,
   STATE_LABELS,
   MAX_TEXT_LENGTH,
+  MARQUEE_GAP,
 } from "./constants"
 
 /**
@@ -38,6 +39,26 @@ export function formatStatusLine(info: NowPlayingInfo): string {
   }
   const serviceName = SERVICE_LABELS[info.service]
   return `${label} ${serviceName}`
+}
+
+export function getFullTrackText(info: NowPlayingInfo): string {
+  return `${info.artist} - ${info.title}`
+}
+
+/**
+ * Fixed-width slice of looping text at given offset.
+ * Wraps around via modular arithmetic with MARQUEE_GAP spaces between repetitions.
+ */
+export function getScrollSlice(text: string, offset: number, width: number): string {
+  const padded = text + " ".repeat(MARQUEE_GAP)
+  const len = padded.length
+  const normalizedOffset = offset % len
+
+  let result = ""
+  for (let i = 0; i < width; i++) {
+    result += padded[(normalizedOffset + i) % len]
+  }
+  return result
 }
 
 /**

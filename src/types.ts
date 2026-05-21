@@ -43,4 +43,5 @@ export interface PlayerctlOutput {
 /** Plugin configuration (from tui.json options) */
 export interface PluginConfig {
   refreshInterval?: number   // polling fallback interval in ms (default: 5000)
+  marquee?: boolean          // enable horizontal scrolling for long track names (default: true)
 }
