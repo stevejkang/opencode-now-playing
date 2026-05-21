@@ -5,6 +5,8 @@ import {
   detectServiceFromPlayerName,
   formatTrackLine,
   formatStatusLine,
+  getFullTrackText,
+  getScrollSlice,
 } from "../src/format.js"
 
 describe("truncateText", () => {
@@ -120,6 +122,63 @@ describe("formatTrackLine", () => {
       state: "playing",
     })
     expect(result.length).toBeLessThanOrEqual(31)
+  })
+})
+
+describe("getFullTrackText", () => {
+  it("returns untruncated artist - title", () => {
+    expect(
+      getFullTrackText({
+        title: "Around the World (Extended Mix)",
+        artist: "Daft Punk",
+        service: "spotify",
+        state: "playing",
+      })
+    ).toBe("Daft Punk - Around the World (Extended Mix)")
+  })
+
+  it("returns short text as-is", () => {
+    expect(
+      getFullTrackText({
+        title: "Get Lucky",
+        artist: "Daft Punk",
+        service: "spotify",
+        state: "playing",
+      })
+    ).toBe("Daft Punk - Get Lucky")
+  })
+})
+
+describe("getScrollSlice", () => {
+  it("returns first window at offset 0", () => {
+    const text = "Daft Punk - Around the World (Extended Mix)"
+    expect(getScrollSlice(text, 0, 10)).toBe("Daft Punk ")
+  })
+
+  it("shifts text by offset", () => {
+    const text = "Daft Punk - Around the World (Extended Mix)"
+    expect(getScrollSlice(text, 5, 10)).toBe("Punk - Aro")
+  })
+
+  it("wraps around to beginning through gap", () => {
+    const text = "ABCDE"
+    // gap = 4 spaces, so padded = "ABCDE    " (length 9)
+    // offset 5 → starts at gap: "    A" (first 5 chars from offset 5)
+    expect(getScrollSlice(text, 5, 5)).toBe("    A")
+  })
+
+  it("returns to exact start after full cycle", () => {
+    const text = "Hello"
+    // padded = "Hello    " (length 9)
+    // offset 9 % 9 = 0 → back to start
+    expect(getScrollSlice(text, 9, 5)).toBe("Hello")
+  })
+
+  it("always returns exactly width characters", () => {
+    const text = "A Very Long Song Title That Exceeds Everything"
+    for (let offset = 0; offset < text.length + 10; offset++) {
+      expect(getScrollSlice(text, offset, 30).length).toBe(30)
+    }
   })
 })
 

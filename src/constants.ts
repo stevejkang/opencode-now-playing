@@ -49,3 +49,12 @@ export const MAX_TEXT_LENGTH = 30
 
 /** Default polling interval in ms (used as fallback when stream breaks) */
 export const DEFAULT_REFRESH_INTERVAL = 5000
+
+/** Marquee scroll interval in ms (time between each character shift) */
+export const MARQUEE_SCROLL_INTERVAL = 300
+
+/** Marquee pause duration in ms (pause at start before scrolling begins) */
+export const MARQUEE_PAUSE_DURATION = 2000
+
+/** Number of spaces inserted between end-of-text and wrapped beginning */
+export const MARQUEE_GAP = 4

@@ -3,13 +3,26 @@ import type { TuiPlugin, TuiPluginModule, TuiSlotContext } from "@opencode-ai/pl
 import { createSignal, onCleanup } from "solid-js"
 import { detectPlatform, createBackend } from "./backend"
 import { ensureCLI } from "./detector"
-import { formatTrackLine, formatStatusLine } from "./format"
+import {
+  formatTrackLine,
+  formatStatusLine,
+  getFullTrackText,
+  getScrollSlice,
+} from "./format"
+import {
+  MAX_TEXT_LENGTH,
+  MARQUEE_SCROLL_INTERVAL,
+  MARQUEE_PAUSE_DURATION,
+  MARQUEE_GAP,
+} from "./constants"
 import type { NowPlayingInfo, PluginConfig } from "./types"
 
 type Status = "loading" | "ready" | "not-installed" | "unsupported"
 
 const tui: TuiPlugin = async (api, options, _meta) => {
-  const refreshInterval = (options as PluginConfig | undefined)?.refreshInterval
+  const config = options as PluginConfig | undefined
+  const refreshInterval = config?.refreshInterval
+  const marqueeEnabled = config?.marquee !== false
 
   api.slots.register({
     order: 50,
@@ -20,6 +33,53 @@ const tui: TuiPlugin = async (api, options, _meta) => {
         const [nowPlaying, setNowPlaying] = createSignal<NowPlayingInfo | null>(null)
         const [status, setStatus] = createSignal<Status>("loading")
         const [hint, setHint] = createSignal("")
+        const [scrollOffset, setScrollOffset] = createSignal(0)
+
+        let marqueeTimer: ReturnType<typeof setInterval> | null = null
+        let pauseTimer: ReturnType<typeof setTimeout> | null = null
+        let prevTrackKey = ""
+
+        function clearMarqueeTimers() {
+          if (marqueeTimer) { clearInterval(marqueeTimer); marqueeTimer = null }
+          if (pauseTimer) { clearTimeout(pauseTimer); pauseTimer = null }
+        }
+
+        function startMarquee(fullText: string) {
+          clearMarqueeTimers()
+          setScrollOffset(0)
+
+          const totalLength = fullText.length + MARQUEE_GAP
+
+          pauseTimer = setTimeout(() => {
+            marqueeTimer = setInterval(() => {
+              setScrollOffset((prev) => (prev + 1) % totalLength)
+            }, MARQUEE_SCROLL_INTERVAL)
+          }, MARQUEE_PAUSE_DURATION)
+        }
+
+        function handleUpdate(info: NowPlayingInfo | null) {
+          setNowPlaying(info)
+          setStatus("ready")
+
+          if (!marqueeEnabled || !info) {
+            clearMarqueeTimers()
+            setScrollOffset(0)
+            prevTrackKey = ""
+            return
+          }
+
+          const trackKey = `${info.artist}\0${info.title}`
+          if (trackKey === prevTrackKey) return
+          prevTrackKey = trackKey
+
+          const fullText = getFullTrackText(info)
+          if (fullText.length > MAX_TEXT_LENGTH) {
+            startMarquee(fullText)
+          } else {
+            clearMarqueeTimers()
+            setScrollOffset(0)
+          }
+        }
 
         const platform = detectPlatform()
 
@@ -37,10 +97,7 @@ const tui: TuiPlugin = async (api, options, _meta) => {
             const backend = createBackend(
               platform,
               controller.signal,
-              (info) => {
-                setNowPlaying(info)
-                setStatus("ready")
-              },
+              handleUpdate,
               refreshInterval,
             )
 
@@ -49,6 +106,7 @@ const tui: TuiPlugin = async (api, options, _meta) => {
             onCleanup(() => {
               controller.abort()
               backend.stop()
+              clearMarqueeTimers()
             })
 
             setStatus("ready")
@@ -57,6 +115,17 @@ const tui: TuiPlugin = async (api, options, _meta) => {
 
         const dim = t.textMuted ?? "#546E7A"
         const warn = t.warning ?? "#FFCB6B"
+
+        function trackDisplay() {
+          const info = nowPlaying()
+          if (!info) return ""
+
+          const fullText = getFullTrackText(info)
+          if (marqueeEnabled && fullText.length > MAX_TEXT_LENGTH) {
+            return getScrollSlice(fullText, scrollOffset(), MAX_TEXT_LENGTH)
+          }
+          return formatTrackLine(info)
+        }
 
         return (
           <box flexDirection="column">
@@ -75,7 +144,7 @@ const tui: TuiPlugin = async (api, options, _meta) => {
             )}
             {status() === "ready" && nowPlaying() !== null && (
               <>
-                <text>{formatTrackLine(nowPlaying()!)}</text>
+                <text>{trackDisplay()}</text>
                 <text fg={dim}>{formatStatusLine(nowPlaying()!)}</text>
               </>
             )}
