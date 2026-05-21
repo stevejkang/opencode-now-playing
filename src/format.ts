@@ -5,7 +5,16 @@ import {
   SERVICE_LABELS,
   STATE_LABELS,
   MAX_TEXT_LENGTH,
+  MARQUEE_GAP,
 } from "./constants"
+
+/**
+ * Strips ASCII control characters (newlines, tabs, etc.) from text.
+ * Replaces sequences of control chars with a single space, then trims.
+ */
+export function sanitizeText(text: string): string {
+  return text.replace(/[\x00-\x1f]+/g, " ").trim()
+}
 
 /**
  * Truncates text to maxLength characters, appending "…" if truncated.
@@ -22,8 +31,8 @@ export function truncateText(text: string, maxLength: number): string {
  * The combined "artist - title" string is then truncated to MAX_TEXT_LENGTH.
  */
 export function formatTrackLine(info: NowPlayingInfo): string {
-  const artist = truncateText(info.artist, MAX_TEXT_LENGTH)
-  const title = truncateText(info.title, MAX_TEXT_LENGTH)
+  const artist = truncateText(sanitizeText(info.artist), MAX_TEXT_LENGTH)
+  const title = truncateText(sanitizeText(info.title), MAX_TEXT_LENGTH)
   return truncateText(`${artist} - ${title}`, MAX_TEXT_LENGTH)
 }
 
@@ -38,6 +47,26 @@ export function formatStatusLine(info: NowPlayingInfo): string {
   }
   const serviceName = SERVICE_LABELS[info.service]
   return `${label} ${serviceName}`
+}
+
+export function getFullTrackText(info: NowPlayingInfo): string {
+  return `${sanitizeText(info.artist)} - ${sanitizeText(info.title)}`
+}
+
+/**
+ * Fixed-width slice of looping text at given offset.
+ * Wraps around via modular arithmetic with MARQUEE_GAP spaces between repetitions.
+ */
+export function getScrollSlice(text: string, offset: number, width: number): string {
+  const padded = text + " ".repeat(MARQUEE_GAP)
+  const len = padded.length
+  const normalizedOffset = offset % len
+
+  let result = ""
+  for (let i = 0; i < width; i++) {
+    result += padded[(normalizedOffset + i) % len]
+  }
+  return result
 }
 
 /**

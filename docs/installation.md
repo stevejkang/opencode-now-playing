@@ -94,6 +94,7 @@ All options are optional. Defaults shown:
 | Option | Type | Default | Description |
 |---|---|---|---|
 | `refreshInterval` | `number` | `5000` | Polling interval in milliseconds when streaming falls back to polling |
+| `marquee` | `boolean` | `true` | Horizontally scroll long track names instead of truncating |
 
 ## Step 3: Restart opencode
 

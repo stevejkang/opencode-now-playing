@@ -80,6 +80,7 @@ opencode resolves the npm package on startup automatically.
 | Option | Default | Description |
 |---|---|---|
 | `refreshInterval` | `5000` | Polling interval in milliseconds (fallback when streaming connection breaks) |
+| `marquee` | `true` | Horizontally scroll long track names instead of truncating |
 
 ## How It Works
 
