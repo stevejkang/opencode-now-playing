@@ -4,6 +4,7 @@ import { createSignal, onCleanup } from "solid-js"
 import { detectPlatform, createBackend } from "./backend"
 import { ensureCLI } from "./detector"
 import {
+  displayWidth,
   formatTrackLine,
   formatStatusLine,
   getFullTrackText,
@@ -48,7 +49,7 @@ const tui: TuiPlugin = async (api, options, _meta) => {
           clearMarqueeTimers()
           setScrollOffset(0)
 
-          const totalLength = fullText.length + MARQUEE_GAP
+          const totalLength = [...fullText].length + MARQUEE_GAP
 
           pauseTimer = setTimeout(() => {
             marqueeTimer = setInterval(() => {
@@ -73,7 +74,7 @@ const tui: TuiPlugin = async (api, options, _meta) => {
           prevTrackKey = trackKey
 
           const fullText = getFullTrackText(info)
-          if (fullText.length > MAX_TEXT_LENGTH) {
+          if (displayWidth(fullText) > MAX_TEXT_LENGTH) {
             startMarquee(fullText)
           } else {
             clearMarqueeTimers()
@@ -121,7 +122,7 @@ const tui: TuiPlugin = async (api, options, _meta) => {
           if (!info) return ""
 
           const fullText = getFullTrackText(info)
-          if (marqueeEnabled && fullText.length > MAX_TEXT_LENGTH) {
+          if (marqueeEnabled && displayWidth(fullText) > MAX_TEXT_LENGTH) {
             return getScrollSlice(fullText, scrollOffset(), MAX_TEXT_LENGTH)
           }
           return formatTrackLine(info)

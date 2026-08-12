@@ -44,7 +44,7 @@ export const STATE_LABELS: Record<PlaybackState, string> = {
   stopped: "stopped",
 }
 
-/** Max characters for track/artist text before truncation */
+/** Max display columns for track/artist text before truncation (CJK chars count as 2) */
 export const MAX_TEXT_LENGTH = 30
 
 /** Default polling interval in ms (used as fallback when stream breaks) */

@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest"
 import {
+  displayWidth,
   sanitizeText,
   truncateText,
   detectService,
@@ -9,6 +10,93 @@ import {
   getFullTrackText,
   getScrollSlice,
 } from "../src/format.js"
+import type { NowPlayingInfo } from "../src/types.js"
+
+interface CharPool {
+  name: string
+  width: 1 | 2
+  range: [number, number]
+}
+
+const CHAR_POOLS: CharPool[] = [
+  { name: "ascii", width: 1, range: [0x21, 0x7e] },
+  { name: "hangul-syllables", width: 2, range: [0xac00, 0xd7a3] },
+  { name: "hangul-jamo", width: 2, range: [0x1100, 0x115f] },
+  { name: "hiragana", width: 2, range: [0x3041, 0x3096] },
+  { name: "katakana", width: 2, range: [0x30a1, 0x30fa] },
+  { name: "cjk-ideographs", width: 2, range: [0x4e00, 0x9fff] },
+  { name: "fullwidth-forms", width: 2, range: [0xff01, 0xff5e] },
+]
+
+function randomCodePoint([min, max]: [number, number]): number {
+  return min + Math.floor(Math.random() * (max - min + 1))
+}
+
+function randomCharFrom(pool: CharPool): string {
+  return String.fromCodePoint(randomCodePoint(pool.range))
+}
+
+function randomPool(): CharPool {
+  return CHAR_POOLS[Math.floor(Math.random() * CHAR_POOLS.length)]!
+}
+
+function randomMixedString(length: number): { text: string; expectedWidth: number } {
+  let text = ""
+  let expectedWidth = 0
+  for (let i = 0; i < length; i++) {
+    const pool = randomPool()
+    text += randomCharFrom(pool)
+    expectedWidth += pool.width
+  }
+  return { text, expectedWidth }
+}
+
+const RANDOM_ITERATIONS = 200
+
+describe("displayWidth", () => {
+  it("returns 0 for empty string", () => {
+    expect(displayWidth("")).toBe(0)
+  })
+
+  it("counts every printable ASCII character as 1 column", () => {
+    for (let i = 0; i < RANDOM_ITERATIONS; i++) {
+      const pool = CHAR_POOLS[0]!
+      const char = randomCharFrom(pool)
+      expect(displayWidth(char), `char: ${char}`).toBe(1)
+    }
+  })
+
+  it("counts every wide-pool character as 2 columns", () => {
+    const widePools = CHAR_POOLS.filter((p) => p.width === 2)
+    for (let i = 0; i < RANDOM_ITERATIONS; i++) {
+      const pool = widePools[i % widePools.length]!
+      const char = randomCharFrom(pool)
+      expect(displayWidth(char), `pool: ${pool.name}, char: ${char}`).toBe(2)
+    }
+  })
+
+  it("width of random mixed string equals sum of per-character widths", () => {
+    for (let i = 0; i < RANDOM_ITERATIONS; i++) {
+      const length = 1 + Math.floor(Math.random() * 60)
+      const { text, expectedWidth } = randomMixedString(length)
+      expect(displayWidth(text), `text: ${text}`).toBe(expectedWidth)
+    }
+  })
+
+  it("is additive over concatenation", () => {
+    for (let i = 0; i < RANDOM_ITERATIONS; i++) {
+      const a = randomMixedString(1 + Math.floor(Math.random() * 20)).text
+      const b = randomMixedString(1 + Math.floor(Math.random() * 20)).text
+      expect(displayWidth(a + b), `a: ${a}, b: ${b}`).toBe(
+        displayWidth(a) + displayWidth(b)
+      )
+    }
+  })
+
+  it("counts control characters as 0 columns", () => {
+    expect(displayWidth("\n\t\r")).toBe(0)
+  })
+})
 
 describe("sanitizeText", () => {
   it("returns clean text unchanged", () => {
@@ -59,6 +147,55 @@ describe("truncateText", () => {
 
   it("returns empty string unchanged", () => {
     expect(truncateText("", 10)).toBe("")
+  })
+
+  it("never exceeds maxWidth + 1 columns for random mixed strings", () => {
+    for (let i = 0; i < RANDOM_ITERATIONS; i++) {
+      const length = 1 + Math.floor(Math.random() * 80)
+      const maxWidth = 4 + Math.floor(Math.random() * 40)
+      const { text } = randomMixedString(length)
+      const result = truncateText(text, maxWidth)
+      expect(
+        displayWidth(result),
+        `text: ${text}, maxWidth: ${maxWidth}, result: ${result}`
+      ).toBeLessThanOrEqual(maxWidth + 1)
+    }
+  })
+
+  it("returns random text unchanged when it fits within maxWidth columns", () => {
+    for (let i = 0; i < RANDOM_ITERATIONS; i++) {
+      const { text, expectedWidth } = randomMixedString(1 + Math.floor(Math.random() * 15))
+      const result = truncateText(text, expectedWidth)
+      expect(result, `text: ${text}`).toBe(text)
+    }
+  })
+
+  it("appends … and preserves original prefix when truncating random text", () => {
+    for (let i = 0; i < RANDOM_ITERATIONS; i++) {
+      const { text, expectedWidth } = randomMixedString(10 + Math.floor(Math.random() * 40))
+      const maxWidth = Math.max(2, Math.floor(expectedWidth / 2))
+      const result = truncateText(text, maxWidth)
+      expect(result.endsWith("…"), `text: ${text}, result: ${result}`).toBe(true)
+      const prefix = result.slice(0, -1)
+      expect(text.startsWith(prefix), `text: ${text}, prefix: ${prefix}`).toBe(true)
+      expect(displayWidth(prefix)).toBeLessThanOrEqual(maxWidth)
+    }
+  })
+
+  it("never splits a wide character at the truncation boundary", () => {
+    for (let i = 0; i < RANDOM_ITERATIONS; i++) {
+      const widePools = CHAR_POOLS.filter((p) => p.width === 2)
+      const pool = widePools[i % widePools.length]!
+      let text = ""
+      for (let j = 0; j < 20; j++) text += randomCharFrom(pool)
+      const oddWidth = 5 + 2 * Math.floor(Math.random() * 10)
+      const result = truncateText(text, oddWidth)
+      expect(
+        displayWidth(result.slice(0, -1)) % 2,
+        `pool: ${pool.name}, text: ${text}, result: ${result}`
+      ).toBe(0)
+      expect(displayWidth(result.slice(0, -1))).toBeLessThanOrEqual(oddWidth - 1)
+    }
   })
 })
 
@@ -145,14 +282,61 @@ describe("formatTrackLine", () => {
     ).toBe("Daft Punk - Get Lucky")
   })
 
-  it("truncates long combined text to 30 chars with …", () => {
+  it("truncates long combined text to 30 columns with …", () => {
     const result = formatTrackLine({
       title: "A Very Long Song Title That Exceeds The Maximum",
       artist: "Some Artist With A Long Name",
       service: "spotify",
       state: "playing",
     })
-    expect(result.length).toBeLessThanOrEqual(31)
+    expect(displayWidth(result)).toBeLessThanOrEqual(31)
+  })
+
+  it("never exceeds 31 display columns for random CJK-heavy tracks", () => {
+    const services: Array<NowPlayingInfo["service"]> = ["spotify", "apple-music", "browser", "unknown"]
+    const states: Array<NowPlayingInfo["state"]> = ["playing", "paused", "stopped"]
+    const widePools = CHAR_POOLS.filter((p) => p.width === 2)
+
+    for (let i = 0; i < RANDOM_ITERATIONS; i++) {
+      const artistPool = widePools[i % widePools.length]!
+      const titlePool = widePools[(i + 1) % widePools.length]!
+      let artist = ""
+      let title = ""
+      for (let j = 0; j < 3 + Math.floor(Math.random() * 8); j++) artist += randomCharFrom(artistPool)
+      for (let j = 0; j < 5 + Math.floor(Math.random() * 20); j++) title += randomCharFrom(titlePool)
+
+      const result = formatTrackLine({
+        title,
+        artist,
+        service: services[i % services.length]!,
+        state: states[i % states.length]!,
+      })
+      expect(
+        displayWidth(result),
+        `artist: ${artist}, title: ${title}, result: ${result}`
+      ).toBeLessThanOrEqual(31)
+    }
+  })
+
+  it("never exceeds 31 display columns for random mixed ASCII/CJK tracks", () => {
+    const services: Array<NowPlayingInfo["service"]> = ["spotify", "apple-music", "browser", "unknown"]
+    const states: Array<NowPlayingInfo["state"]> = ["playing", "paused", "stopped"]
+
+    for (let i = 0; i < RANDOM_ITERATIONS; i++) {
+      const artist = randomMixedString(2 + Math.floor(Math.random() * 10)).text
+      const title = randomMixedString(3 + Math.floor(Math.random() * 25)).text
+
+      const result = formatTrackLine({
+        title,
+        artist,
+        service: services[i % services.length]!,
+        state: states[i % states.length]!,
+      })
+      expect(
+        displayWidth(result),
+        `artist: ${artist}, title: ${title}, result: ${result}`
+      ).toBeLessThanOrEqual(31)
+    }
   })
 })
 
@@ -204,22 +388,81 @@ describe("getScrollSlice", () => {
 
   it("wraps around to beginning through gap", () => {
     const text = "ABCDE"
-    // gap = 4 spaces, so padded = "ABCDE    " (length 9)
-    // offset 5 → starts at gap: "    A" (first 5 chars from offset 5)
     expect(getScrollSlice(text, 5, 5)).toBe("    A")
   })
 
   it("returns to exact start after full cycle", () => {
     const text = "Hello"
-    // padded = "Hello    " (length 9)
-    // offset 9 % 9 = 0 → back to start
     expect(getScrollSlice(text, 9, 5)).toBe("Hello")
   })
 
-  it("always returns exactly width characters", () => {
+  it("always returns exactly width columns for ASCII text", () => {
     const text = "A Very Long Song Title That Exceeds Everything"
     for (let offset = 0; offset < text.length + 10; offset++) {
-      expect(getScrollSlice(text, offset, 30).length).toBe(30)
+      expect(displayWidth(getScrollSlice(text, offset, 30))).toBe(30)
+    }
+  })
+
+  it("always fills exactly width columns for random CJK-only tracks at every offset", () => {
+    const widePools = CHAR_POOLS.filter((p) => p.width === 2)
+    for (let i = 0; i < 50; i++) {
+      const pool = widePools[i % widePools.length]!
+      let artist = ""
+      let title = ""
+      for (let j = 0; j < 3 + Math.floor(Math.random() * 6); j++) artist += randomCharFrom(pool)
+      for (let j = 0; j < 5 + Math.floor(Math.random() * 15); j++) title += randomCharFrom(pool)
+      const text = `${artist} - ${title}`
+      const width = 10 + Math.floor(Math.random() * 25)
+      const cycleLength = [...text].length + 4
+      for (let offset = 0; offset < cycleLength; offset++) {
+        expect(
+          displayWidth(getScrollSlice(text, offset, width)),
+          `pool: ${pool.name}, text: ${text}, offset: ${offset}, width: ${width}`
+        ).toBe(width)
+      }
+    }
+  })
+
+  it("always fills exactly width columns for random mixed artist-title tracks at every offset", () => {
+    for (let i = 0; i < 50; i++) {
+      const artist = randomMixedString(2 + Math.floor(Math.random() * 8)).text
+      const title = randomMixedString(3 + Math.floor(Math.random() * 15)).text
+      const text = `${artist} - ${title}`
+      const width = 10 + Math.floor(Math.random() * 25)
+      const cycleLength = [...text].length + 4
+      for (let offset = 0; offset < cycleLength; offset++) {
+        expect(
+          displayWidth(getScrollSlice(text, offset, width)),
+          `text: ${text}, offset: ${offset}, width: ${width}`
+        ).toBe(width)
+      }
+    }
+  })
+
+  it("always fills exactly width columns for random mixed strings at every offset", () => {
+    for (let i = 0; i < 50; i++) {
+      const length = 5 + Math.floor(Math.random() * 40)
+      const width = 6 + Math.floor(Math.random() * 30)
+      const { text } = randomMixedString(length)
+      const cycleLength = [...text].length + 4
+      for (let offset = 0; offset < cycleLength + 5; offset++) {
+        expect(
+          displayWidth(getScrollSlice(text, offset, width)),
+          `text: ${text}, offset: ${offset}, width: ${width}`
+        ).toBe(width)
+      }
+    }
+  })
+
+  it("returns to exact start after a full cycle for random mixed strings", () => {
+    for (let i = 0; i < 50; i++) {
+      const { text } = randomMixedString(5 + Math.floor(Math.random() * 30))
+      const width = 6 + Math.floor(Math.random() * 20)
+      const cycleLength = [...text].length + 4
+      expect(
+        getScrollSlice(text, cycleLength, width),
+        `text: ${text}, width: ${width}`
+      ).toBe(getScrollSlice(text, 0, width))
     }
   })
 })
