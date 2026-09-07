@@ -34,10 +34,13 @@
   "peerDependencies": {
     "@opencode-ai/plugin": ">=1.4.3"
   },
+  "dependencies": {
+    "@opentui/core": "^0.4.5",
+    "@opentui/solid": "^0.4.5",
+    "solid-js": "^1.9.7"
+  },
   "devDependencies": {
     "@opencode-ai/plugin": "^1.4.3",
-    "@opentui/core": "latest",
-    "@opentui/solid": "latest",
     "@types/node": "^25.6.0",
     "typescript": "^5.0.0",
     "vitest": "^2.0.0"
