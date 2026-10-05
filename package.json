@@ -1,6 +1,6 @@
 {
   "name": "opencode-now-playing",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Now playing music sidebar widget for opencode",
   "type": "module",
   "exports": {
