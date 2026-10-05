@@ -54,9 +54,9 @@ If the dependency isn't found, the plugin shows an install prompt instead of pla
 
 ### Setup
 
-One config file. Restart. Done.
+One config file. Restart. Done. The same package works on opencode v1 and v2; only the config file differs.
 
-**`~/.config/opencode/tui.json`**
+**opencode v1** — `~/.config/opencode/tui.json`
 
 ```json
 {
@@ -65,9 +65,20 @@ One config file. Restart. Done.
 }
 ```
 
+**opencode v2** — `~/.config/opencode/cli.json`
+
+```json
+{
+  "$schema": "https://opencode.ai/v2/cli.json",
+  "plugins": [{ "package": "opencode-now-playing", "options": {} }]
+}
+```
+
 opencode resolves the npm package on startup automatically.
 
 ### Options
+
+Shown in opencode v1 form. On opencode v2, put the same object under `options` of the `cli.json` entry.
 
 ```json
 {
@@ -102,7 +113,7 @@ Streams playback state in real-time. Falls back to polling (up to 3 retries) if 
 
 ## Requirements
 
-- [opencode](https://opencode.ai) with plugin support (`@opencode-ai/plugin` >= 1.4.3)
+- [opencode](https://opencode.ai) v1 with plugin support (`@opencode-ai/plugin` >= 1.4.3), or opencode v2 (`@opencode/plugin` >= 2.0.20)
 - macOS: `brew install media-control`
 - Linux: `sudo apt install playerctl` or `brew install playerctl`
 
@@ -119,11 +130,20 @@ cp src/backends/macos.ts src/backends/linux.ts \
    ~/.config/opencode/plugins/opencode-now-playing/backends/
 ```
 
-Register the local path:
+Register the local path (opencode v1):
 
 ```json
 {
   "plugin": ["./plugins/opencode-now-playing/tui.tsx"]
+}
+```
+
+On opencode v2, point `cli.json` at a clone of this repository, which exposes a root `tui.ts`:
+
+```json
+{
+  "$schema": "https://opencode.ai/v2/cli.json",
+  "plugins": [{ "package": "/path/to/opencode-now-playing", "options": {} }]
 }
 ```
 

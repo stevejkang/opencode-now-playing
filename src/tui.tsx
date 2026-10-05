@@ -1,5 +1,6 @@
 /** @jsxImportSource @opentui/solid */
 import type { TuiPlugin, TuiPluginModule, TuiSlotContext } from "@opencode-ai/plugin/tui"
+import type { Plugin as V2Plugin } from "@opencode/plugin/tui"
 import type { ColorInput } from "@opentui/core"
 import { createSignal } from "solid-js"
 import { detectPlatform, createBackend, type Backend } from "./backend"
@@ -178,9 +179,26 @@ const tui: TuiPlugin = async (api, options, _meta) => {
   })
 }
 
-const plugin: TuiPluginModule & { id: string } = {
+const setup = (ctx: V2Plugin.Context) => {
+  const nowPlaying = startNowPlaying(ctx.options)
+  ctx.ui.slot({
+    append: "sidebar.content",
+    render: () =>
+      nowPlaying.renderSidebar({
+        muted: ctx.theme.text.muted,
+        warning: ctx.theme.text.feedback.warning.base,
+      }),
+  })
+  return nowPlaying.dispose
+}
+
+/**
+ * Serves both OpenCode hosts from one module: v1 calls `tui`, v2 calls `setup`.
+ */
+const plugin: TuiPluginModule & V2Plugin.Definition = {
   id: "opencode-now-playing",
   tui,
+  setup,
 }
 
 export default plugin

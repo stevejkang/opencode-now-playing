@@ -20,6 +20,7 @@
     "apple-music"
   ],
   "files": [
+    "tui.ts",
     "src/"
   ],
   "license": "MIT",
@@ -32,7 +33,16 @@
     "url": "https://github.com/stevejkang/opencode-now-playing/issues"
   },
   "peerDependencies": {
-    "@opencode-ai/plugin": ">=1.4.3"
+    "@opencode-ai/plugin": ">=1.4.3",
+    "@opencode/plugin": ">=2.0.20"
+  },
+  "peerDependenciesMeta": {
+    "@opencode-ai/plugin": {
+      "optional": true
+    },
+    "@opencode/plugin": {
+      "optional": true
+    }
   },
   "dependencies": {
     "@opentui/core": "^0.4.5",
@@ -41,6 +51,7 @@
   },
   "devDependencies": {
     "@opencode-ai/plugin": "^1.4.3",
+    "@opencode/plugin": "^2.0.20",
     "@types/node": "^25.6.0",
     "typescript": "^5.0.0",
     "vitest": "^2.0.0"
